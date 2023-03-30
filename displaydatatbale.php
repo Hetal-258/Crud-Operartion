@@ -203,6 +203,9 @@ table.table .avatar {
     box-shadow: none;
     background: #ddd;
 }
+.pagination a {
+    padding: 10px;
+ }
   
 </style>
 <script>
@@ -270,8 +273,17 @@ $(document).ready(function(){
                             $password='M$p@1234';
                             $dbname = "prac-demo";
                             $conn=mysqli_connect($servername,$username,$password,$dbname);
-                            
-                            $result =mysqli_query($conn ,"SELECT * FROM `demotbl`");
+                            $per_page_record = 5;  // Number of entries to show in a page.   
+                            // Look for a GET variable page if not found default is 1.        
+                            if (isset($_GET["page"])) {    
+                                $page  = $_GET["page"];    
+                            }    
+                            else {    
+                              $page=1;    
+                            }    
+                        
+                            $start_from = ($page-1) * $per_page_record;
+                            $result =mysqli_query($conn ,"SELECT * FROM `demotbl` LIMIT $start_from, $per_page_record");
 
                             while($test = mysqli_fetch_array($result))
                             {
@@ -301,15 +313,47 @@ $(document).ready(function(){
             </table>
             <div class="clearfix">
                 <div class="hint-text">Showing <b>5</b> out of <b>25</b> entries</div>
-                <ul class="pagination">
-                    <li class="page-item disabled"><a href="#">Previous</a></li>
-                    <li class="page-item"><a href="#" class="page-link">1</a></li>
-                    <li class="page-item"><a href="#" class="page-link">2</a></li>
-                    <li class="page-item active"><a href="#" class="page-link">3</a></li>
-                    <li class="page-item"><a href="#" class="page-link">4</a></li>
-                    <li class="page-item"><a href="#" class="page-link">5</a></li>
-                    <li class="page-item"><a href="#" class="page-link">Next</a></li>
-                </ul>
+                <div class="pagination">  
+                <?php
+                $query = "SELECT COUNT(*) FROM `demotbl`";     
+                $rs_result = mysqli_query($conn, $query);     
+                $row = mysqli_fetch_row($rs_result);     
+                $total_records = $row[0];
+                 echo "</br>";     
+                        // Number of pages required.   
+                        $total_pages = ceil($total_records / $per_page_record);     
+                        $pagLink = "";       
+                      
+                        if($page>=2){   
+                            echo "<a href='displaydatatbale.php?page=".($page-1)."'>  Prev </a>";   
+                        }       
+                                   
+                        for ($i=1; $i<=$total_pages; $i++) {   
+                          if ($i == $page) {   
+                              $pagLink .= "<a class = 'active' href='displaydatatbale.php?page="  
+                                                                .$i."'>".$i." </a>";   
+                          }               
+                          else  {   
+                              $pagLink .= "<a href='displaydatatbale.php?page=".$i."'>   
+                                                                ".$i." </a>";     
+                          }   
+                        };     
+                        echo $pagLink;   
+                  
+                        if($page<$total_pages){   
+                            echo "<a href='displaydatatbale.php?page=".($page+1)."'>  Next </a>";   
+                        }   
+                  
+                      ?>    
+                      </div>  
+                      <script>   
+                    function go2Page()   
+                    {   
+                        var page = document.getElementById("page").value;   
+                        page = ((page><?php echo $total_pages; ?>)?<?php echo $total_pages; ?>:((page<1)?1:page));   
+                        window.location.href = 'displaydatatbale.php?page='+page;   
+                    }   
+                  </script> 
             </div>
         </div>
     </div>        
